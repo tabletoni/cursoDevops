@@ -41,7 +41,6 @@ services:
         constraints: [node.platform.os == linux]
 
 
-
 networks:
   portainer_agent:
     external: true
