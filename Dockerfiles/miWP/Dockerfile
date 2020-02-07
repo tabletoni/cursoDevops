@@ -14,7 +14,7 @@ RUN set -eux ; \
         ln -sf /dev/stdout /var/log/apache2/access.log ; \
         ln -sf /dev/stderr /var/log/apache2/error.log ; \
         a2enmod rewrite &&  a2dismod status ; \
-	apt remove wget ; \ 
+	apt -y remove wget ; \ 
 	apt -y clean ; \
 	rm -rf /var/lib/apt/lists/* ; \
 EXPOSE 80 443
