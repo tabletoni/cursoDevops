@@ -1,0 +1,50 @@
+version: '3.3'
+
+services:
+  db:
+    image: mysql:5.7
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: always
+    networks:
+      - backend
+    environment:
+      MYSQL_ROOT_PASSWORD: somewordpress
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+
+  wordpress:
+    image: wordpress:latest
+    networks:
+      - backend
+      - proxy
+    restart: always
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress
+    deploy:
+      labels:
+        traefik.port: 80
+        traefik.frontend.rule: "Host:wp.192.168.20.201.nip.io,wp.192.168.20.202.nip.io,wp.192.168.20.203.nip.io"
+        traefik.docker.network: 'proxy'
+
+volumes:
+    db_data:
+      driver_opts:
+        type: "nfs"
+        o: "addr=192.168.20.203,nolock,soft,rw"
+        device: ":/srv/nfs/volumes/tonidb/dbdata"
+    wp_data:
+      driver_opts:
+        type: "nfs"
+        o: "addr=192.168.20.203,nolock,soft,rw"
+        device: ":/srv/nfs/volumes/tonidb/wpdata"
+      
+
+networks:
+  backend:
+  proxy:
+    external: true
