@@ -1,0 +1,55 @@
+version: '3.4'
+
+services:
+  portainer:
+    image: portainer/portainer
+    command: '-H "tcp://tasks.agent:9001" --tlsskipverify'
+    ports:
+      - 9000:9000
+    networks:
+      - proxy
+      - portainer_agent
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /srv/docker/volumes/portainer/data:/data
+      
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        traefik.port: 9000
+        traefik.frontend.rule: "Host:portainer.192.168.20.201.nip.io,portainer.192.168.20.202.nip.io,portainer.192.168.20.203.nip.io"
+        traefik.docker.network: 'proxy'
+      placement:
+        constraints: [node.role == manager]
+    
+  agent:
+    image: portainer/agent
+    environment:
+      AGENT_CLUSTER_ADDR: tasks.agent
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - target: 9001
+        published: 9001
+        protocol: tcp
+        mode: host
+    networks:
+      - portainer_agent
+    deploy:
+      mode: global
+      placement:
+        constraints: [node.platform.os == linux]
+#
+#volumes:
+#  portainer_data:
+#    driver_opts:
+#      type: "nfs"
+#      o: "addr=192.168.20.203,nlock,soft,rw"
+#      device: ":/srv/nfs/volumes/portainer/data"
+#
+networks:
+  portainer_agent:
+    external: true
+  proxy:
+    external: true

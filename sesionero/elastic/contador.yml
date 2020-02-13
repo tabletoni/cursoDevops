@@ -1,0 +1,27 @@
+version: '3.6'
+
+services:
+  redis:
+    image: redis:latest
+    networks:
+      - backend
+
+  web:
+    image: kpeiruza/docker-php-mysql-redis:latest
+#    image: cuenta:gotas
+    networks:
+      - backend
+      - proxy
+    deploy:
+      replicas: 4 # opcional
+      endpoint_mode: vip # opcional
+      labels: # por narices esto y las 3 siguientes
+        traefik.port: 80
+        traefik.frontend.rule: "Host:portainer.192.168.20.201.nip.io,portainer.192.168.20.202.nip.io,portainer.192.168.20.203.nip.io"
+        traefik.docker.network: 'proxy'
+
+networks:
+  backend:
+  proxy:
+    external: true
+
